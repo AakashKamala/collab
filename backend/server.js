@@ -2,7 +2,6 @@ const express=require("express")
 const cors=require("cors")
 const socketIo=require("socket.io")
 const http=require("http")
-const { disconnect } = require("process")
 
 const app=express()
 
@@ -10,7 +9,7 @@ app.use(cors())
 app.use(express.json())
 
 const server=http.createServer(app)
-let answer=""
+const answer=new Map()
 
 const io=socketIo(server,{
     cors:{
@@ -23,12 +22,12 @@ io.on("connection",(socket)=>{
 
     socket.on("ques", (roomNo)=>{
         socket.join(roomNo)
-        io.to(roomNo).emit("welcome", {"message":`${socket.id} , joined the room`, "answer":answer})
+        io.to(roomNo).emit("welcome", {"message":`${socket.id} , joined the room`, "answer":answer.get(roomNo)})
     })
 
     socket.on("sol", (text, roomNo)=>{
         io.to(roomNo).emit("soln", {"message":text})
-        answer=text
+        answer.set(roomNo, text)
     })
 })
 
